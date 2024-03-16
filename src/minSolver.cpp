@@ -73,7 +73,6 @@ namespace minimizer
             {
                 ++i;
                 a /= 2;
-                // std::cout << a << std::endl;
             }
         point_type x_new(new_x(p, x_old, a));
         bool check(check_tol_residual(p, x_new, x_old) && check_tol_step(p, x_new, x_old));
