@@ -27,14 +27,14 @@ namespace minimizer{
 
         param(
             const std::string & solver_type_ = "armijo",
-            const unsigned int k_max_ = 1000, 
-            const double & tol_r = std::numeric_limits<double>::epsilon()*1000, 
-            const double & tol_s = std::numeric_limits<double>::epsilon()*1000, 
-            const double & mu_= 0.2, const double & a_= 0.15, 
-            const double & sigma_ = 0.5, const double & eta_ = 0.9,
+            const unsigned int k_max_ = 100, 
+            const double & tol_r = 1e-6, 
+            const double & tol_s = 1e-6, 
+            const double & mu_= 0.2, 
+            const double & a_= 0.2, 
+            const double & sigma_ = 0.2, 
+            const double & eta_ = 0.9,
             const point_type & x0_ = {0.0, 0.0}) :
-            // fun(f),
-            // dfun(df),
             solver_type(solver_type_),
             k_max(k_max_),
             tol_residual(tol_r),

@@ -7,13 +7,12 @@
 
 namespace minimizer 
 {        
-    // typedef bool(*solverFun)(const param &, point_type &, double &, const unsigned int &); 
     typedef std::function<bool(const fun_type &, const dfun_type &, const param &, point_type & , double &, const unsigned int &)> 
     solverFun;
 
     point_type solve(const fun_type &, const dfun_type &, const param &);
+    point_type solve(const fun_type &, const param &);
     bool armijo_condition(const fun_type &, const dfun_type &,const param &, const point_type &, const double &);
-    // bool gradient_solver(const param &, point_type &, double &, const unsigned int &);
     bool inverse_decay_solver(const fun_type &, const dfun_type &, const param &, point_type &, double &, const unsigned int &);
     bool exponential_decay_solver(const fun_type &, const dfun_type &, const param &, point_type &, double &, const unsigned int &);
     bool armijo_solver(const fun_type &, const dfun_type &, const param &, point_type &, double &, const unsigned int &);

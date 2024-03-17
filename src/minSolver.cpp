@@ -4,7 +4,6 @@
 namespace minimizer 
 {
     // @param solverType choose between "gradient", "inverse_decay", "exponential_decay" and "armijo"
-    // 
     point_type solve(const fun_type &fun, const dfun_type &dfun, const param & p)
     {
         point_type x(p.x_0);
@@ -21,9 +20,27 @@ namespace minimizer
         }
         std::cout << "\n"<< p.solver_type << " solver:\n";
         std::cout << "minimum found in " << i << " itertions :" << std::endl;
-        print_point(x);
+        // print_point(x);
         std::cout << "min(f(x)) = " << fun(x) << std::endl;
         return x;
+    }
+
+    point_type solve(const fun_type &fun, const param & p)
+    {
+        auto df = [fun](const point_type & x)
+        {
+            double h = std::numeric_limits<double>::epsilon() * 1000;
+            minimizer::point_type df_x(x);
+            for (unsigned int i = 0; i<x.size(); ++i)
+            {
+                minimizer::point_type x_plus(x), x_minus(x);
+                x_minus[i] -= h; x_plus[i] += h;
+                df_x[i] = (fun(x_plus)-fun(x_minus))/2/h;
+            }
+            return df_x;
+        };
+        
+        return solve(fun, df, p);
     }
 
     /* evaluates the Armijo condition.
