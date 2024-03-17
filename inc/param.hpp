@@ -5,16 +5,16 @@
 #include <limits>
 
 
+// @todo from array to vector
 namespace minimizer{  
 
-    typedef std::array<double, 2> point_type;
+    typedef std::vector<double> point_type;
     typedef std::function<double(const point_type &)> fun_type;
     typedef std::function<point_type (const point_type &)> dfun_type; 
 
     struct param
     {
-        fun_type fun;
-        dfun_type dfun;
+        const std::string solver_type;
         const unsigned int k_max;
         const double tol_residual;
         const double tol_step;
@@ -25,15 +25,17 @@ namespace minimizer{
         double sigma;
         double eta;
 
-        param(const fun_type & f, const dfun_type & df, 
-            const unsigned int k_max_ = 100, 
+        param(
+            const std::string & solver_type_ = "armijo",
+            const unsigned int k_max_ = 1000, 
             const double & tol_r = std::numeric_limits<double>::epsilon()*1000, 
             const double & tol_s = std::numeric_limits<double>::epsilon()*1000, 
             const double & mu_= 0.2, const double & a_= 0.15, 
             const double & sigma_ = 0.5, const double & eta_ = 0.9,
             const point_type & x0_ = {0.0, 0.0}) :
-            fun(f),
-            dfun(df),
+            // fun(f),
+            // dfun(df),
+            solver_type(solver_type_),
             k_max(k_max_),
             tol_residual(tol_r),
             tol_step(tol_s), 
