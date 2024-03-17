@@ -1,4 +1,4 @@
-#include "minSolver.hpp"
+#include "solvers.hpp"
 #include <cmath>
 
 namespace minimizer 

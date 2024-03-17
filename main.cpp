@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
-#include "minSolver.hpp"
+#include "solvers.hpp"
 #include "param.hpp"
 #include "json.hpp"
 

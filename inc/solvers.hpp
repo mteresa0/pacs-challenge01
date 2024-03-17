@@ -1,5 +1,5 @@
-#ifndef MINSOLVER
-#define MINSOLVER
+#ifndef MINSOLVERS
+#define MINSOLVERS
 
 #include <iostream>
 #include <functional>
@@ -27,4 +27,4 @@ namespace minimizer
     void print_point(const point_type &);
 }
 
-#endif //MINSOLVER
+#endif
