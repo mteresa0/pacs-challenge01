@@ -6,7 +6,7 @@ namespace minimizer
     // @param solverType choose between "gradient", "inverse_decay", "exponential_decay" and "armijo"
     point_type solve(const fun_type &fun, const dfun_type &dfun, const param & p)
     {
-        std::cout<< "\nComputing " << p.solver_type << " method ...\n";
+        std::cout<< "\nComputing minimum with " << p.solver_type << " method ...\n";
         solverFun solver = choose_solver(p.solver_type);
 
         point_type x_min = solver(fun, dfun, p);
@@ -137,7 +137,7 @@ namespace minimizer
     // @returns pointer to function of the chose solver type
     solverFun choose_solver(const std::string & solverType)
     {
-        if (solverType=="gradient")
+        if (solverType=="fixed_step")
             return &fixed_step_solver;
         else if (solverType=="exponential_decay")
             return &exponential_decay_solver;

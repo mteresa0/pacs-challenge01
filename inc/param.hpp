@@ -1,11 +1,11 @@
 #ifndef PARAM
 #define PARAM
 
+#include <fstream>
 #include <functional>
 #include <limits>
 
 
-// @todo from array to vector
 namespace minimizer{  
 
     typedef std::vector<double> point_type;
@@ -18,35 +18,67 @@ namespace minimizer{
         const unsigned int k_max;
         const double tol_residual;
         const double tol_step;
+        
+        const double alpha;
+        const double mu;
+        const double sigma;
+        const double eta;
 
-        point_type x_0;
-        double mu;
-        double alpha;
-        double sigma;
-        double eta;
+        const point_type x_0;
 
-        param(
-            const std::string & solver_type_ = "armijo",
+        param(const std::string & solver_type_ ,
             const unsigned int k_max_ = 100, 
             const double & tol_r = 1e-6, 
             const double & tol_s = 1e-6, 
+            const double & a_= 0.1, 
             const double & mu_= 0.2, 
-            const double & a_= 0.15, 
             const double & sigma_ = 0.2, 
             const double & eta_ = 0.9,
             const point_type & x0_ = {0.0, 0.0}) :
             solver_type(solver_type_),
             k_max(k_max_),
             tol_residual(tol_r),
-            tol_step(tol_s), 
-            x_0(x0_),
+            tol_step(tol_s),  
+            alpha(a_),           
             mu(mu_),
-            alpha(a_),
             sigma(sigma_),
-            eta(eta_)
-        {}
-        
+            eta(eta_),
+            x_0(x0_)
+        {}        
+
     };
+
+    param read_parameters_from_json(const std::string & , const std::string &);
+
+    /*        
+        const double mu;
+        const double alpha;
+        const double sigma;
+        const double eta;
+        
+            const double & mu_= 0.2, 
+            const double & a_= 0.1, 
+            const double & sigma_ = 0.2, 
+            const double & eta_ = 0.9,
+    */
+
+    // struct armijo_param : public param
+    // {
+    //     const double alpha;
+    //     const double sigma;
+
+    //     armijo_param(const unsigned int k_max_ = 100, 
+    //         const double & tol_r = 1e-6, 
+    //         const double & tol_s = 1e-6, 
+    //         const double & alpha_ = 0.1,
+    //         const double & sigma_ = 0.9):
+    //         param("armijo", k_max_, tol_r, tol_s),
+    //         alpha(alpha_),
+    //         sigma(sigma_) 
+    //     {};
+        
+    // };
+    
 }
 
 #endif //PARAM

@@ -6,10 +6,9 @@ INC_DIR = inc
 SRC_DIR = src
 OBJ_DIR = obj
 
-SRCS_IN_DIR = $(wildcard $(SRC_DIR)/*.cpp) 
-SRCS = $(wildcard *.cpp) $(SRCS_IN_DIR)
+SRCS = $(wildcard $(SRC_DIR)/*.cpp) 
 HDRS = $(wildcard $(INC_DIR)/*.hpp)
-OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS_IN_DIR)) $(OBJ_DIR)/main.o
+OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
 EXEC = main
 
 all : $(EXEC) 
