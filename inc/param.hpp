@@ -31,8 +31,8 @@ namespace minimizer{
             const double & tol_r = 1e-6, 
             const double & tol_s = 1e-6, 
             const double & mu_= 0.2, 
-            const double & a_= 0.2, 
-            const double & sigma_ = 0.2, 
+            const double & a_= 0.11, 
+            const double & sigma_ = 0.5, 
             const double & eta_ = 0.9,
             const point_type & x0_ = {0.0, 0.0}) :
             solver_type(solver_type_),

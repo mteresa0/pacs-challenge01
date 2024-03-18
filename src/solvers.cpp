@@ -6,23 +6,12 @@ namespace minimizer
     // @param solverType choose between "gradient", "inverse_decay", "exponential_decay" and "armijo"
     point_type solve(const fun_type &fun, const dfun_type &dfun, const param & p)
     {
-        point_type x(p.x_0);
+        std::cout<< "\nComputing " << p.solver_type << " method ...\n";
         solverFun solver = choose_solver(p.solver_type);
-        unsigned int i = 0;
-        double a_k = p.alpha;
-        
-        bool check = true;
 
-        while (i<p.k_max && check)
-        {
-            check = solver(fun, dfun, p, x, a_k, i);
-            ++i;
-        }
-        std::cout << "\n"<< p.solver_type << " solver:\n";
-        std::cout << "minimum found in " << i << " itertions :" << std::endl;
-        // print_point(x);
-        std::cout << "min(f(x)) = " << fun(x) << std::endl;
-        return x;
+        point_type x_min = solver(fun, dfun, p);
+
+        return x_min;
     }
 
     point_type solve(const fun_type &fun, const param & p)
@@ -43,67 +32,116 @@ namespace minimizer
         return solve(fun, df, p);
     }
 
+    // point_type fixed_step_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+    // {        
+    //     point_type x_old(p.x_0);
+    //     point_type x_new(new_x(dfun, x_old, p.alpha));
+    //     unsigned int k = 0;
+        
+    //     bool check = check_tol(fun, p, x_new, x_old);
+
+    //     while (k<p.k_max && check)
+    //     {
+    //         x_new = new_x(dfun, x_old, p.alpha);
+    //         check = check_tol_residual(fun, p, x_new, x_old);
+    //         x_old = x_new;            
+    //         ++k;
+    //     }
+
+    //     print_results(fun, x_old, k);
+    //     return x_old;
+    // }
+
+    point_type inverse_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+    {
+        point_type x_old(p.x_0);
+        point_type x_new(new_x(dfun, x_old, p.alpha));
+        unsigned int k = 0;
+        double a_k = p.alpha;
+        
+        bool check = check_tol(fun, p, x_new, x_old);
+
+        while (k<p.k_max && check)
+        {
+            x_new = new_x(dfun, x_old, a_k);
+            check = check_tol(fun, p, x_new, x_old);
+            a_k = p.alpha/(1 + k*p.mu);
+            x_old = x_new;            
+            ++k;
+        }
+
+        print_results(fun, x_old, k);
+        return x_old;
+    }
+
+    point_type exponential_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+    {
+        point_type x_old(p.x_0);
+        point_type x_new(new_x(dfun, x_old, p.alpha));
+        unsigned int k = 0;
+        double a_k = p.alpha;
+        
+        bool check = check_tol(fun, p, x_new, x_old);
+
+        while (k<p.k_max && check)
+        {
+            x_new = new_x(dfun, x_old, a_k);
+            check = check_tol(fun, p, x_new, x_old);
+            a_k = p.alpha * std::exp(-(k*p.mu));
+            x_old = x_new;            
+            ++k;
+        }
+
+        print_results(fun, x_old, k);
+        return x_old;
+    }
+
+    point_type armijo_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+    {
+        point_type x_old(p.x_0);
+        point_type x_new = (new_x(dfun, x_old, p.alpha));
+        unsigned int k = 0;
+        double a_k = p.alpha;
+        
+        bool check = check_tol(fun, p, x_new, x_old);
+        unsigned int i_max(100), i(0);
+
+        while (k<p.k_max && check)
+        {
+            i = 0;
+            while (!armijo_condition(fun, dfun, p, x_old, a_k) && i<i_max)
+            {
+                ++i;
+                a_k /= 2;
+            }
+            x_new = new_x(dfun, x_old, p.alpha);
+            check = check_tol(fun, p, x_new, x_old);
+            x_old = x_new;            
+            ++k;
+        }
+
+        print_results(fun, x_old, k);
+        return x_old;
+    }
+    
     /* evaluates the Armijo condition.
     @note (fun(x0) - fun(x0 - alpha0*df(x0)) >= sigma * alpha0 * norm(df(x0))^2)*/
     bool armijo_condition(const fun_type &fun, const dfun_type &dfun, const param & p, const point_type & x0, const double & a0)
     {
         point_type x1 = new_x(dfun, x0, a0);
         double norm_df = norm2(dfun(x0));
-        return (fun(x0) - fun(x1) >= p.sigma * a0 * norm_df*norm_df);
+        // std::cout << fun(x0) - fun(x1) - p.sigma * a0 * norm_df*norm_df << "    " <<std::abs( norm2(x1)-norm2(x0) )   <<"\n";
+        return ( (fun(x0) - fun(x1)) >= p.sigma * a0 * norm_df*norm_df);
     }
 
-    // computes the new point and returns true if the step and the residual tollerance are not exceeded
-    // @note alpha is constant
-    bool gradient_solver(const fun_type &fun, const dfun_type &dfun, const param & p, point_type & x_old, double & a0, const unsigned int & k)
-    {
-        point_type x_new(new_x(dfun, x_old, a0));
-        bool check (check_tol_residual(fun, p, x_new, x_old) && check_tol_step(p, x_new, x_old));
-        x_old = x_new;
-        return check;
-    }
-
-    // computes the new point and returns true if the step and the residual tollerance are not exceeded
-    // @note alpha_k = alpha_0/(1 + k*mu)
-    bool inverse_decay_solver(const fun_type &fun, const dfun_type &dfun, const param & p, point_type & x_old, double & a0, const unsigned int & k)
-    {
-        point_type x_new(new_x(dfun, x_old, a0/(1 + k*p.mu)));
-        bool check (check_tol_residual(fun, p, x_new, x_old) && check_tol_step(p, x_new, x_old));
-        x_old = x_new;
-        return check;
-    }
-
-    // computes the new point and returns true if the step and the residual tollerance are not exceeded
-    // @note alpha_k = alpha_0 * exp(-k*mu)
-    bool exponential_decay_solver(const fun_type &fun, const dfun_type &dfun, const param & p, point_type & x_old, double & a0, const unsigned int & k)
-    {
-        point_type x_new(new_x(dfun, x_old, a0*std::exp(-(k*p.mu))));
-        // print_point(x_new);
-        bool check (check_tol_residual(fun, p, x_new, x_old) && check_tol_step(p, x_new, x_old));
-        x_old = x_new;
-        return check;
-    }
-
-    bool armijo_solver(const fun_type &fun, const dfun_type &dfun, const param & p, point_type & x_old, double & a, const unsigned int & k)
-    {
-        unsigned int i(0), i_max(100);
-            while (!armijo_condition(fun, dfun, p, x_old, a) && i<i_max)
-            {
-                ++i;
-                a /= 2;
-            }
-        point_type x_new(new_x(dfun, x_old, a));
-        bool check(check_tol_residual(fun, p, x_new, x_old) && check_tol_step(p, x_new, x_old));
-        x_old = x_new;
-        return check;
-    }
-
-    // @param solverType must be "gradient", "inverse_decay", "exponential_decay" or "armijo"
+    // @param solverType must be "fixed_step_solver", "inverse_decay", "exponential_decay" or "armijo"
     // @returns pointer to function of the chose solver type
     solverFun choose_solver(const std::string & solverType)
     {
-        if (solverType=="gradient")
-            return &gradient_solver;
-        else if (solverType=="exponential_decay")
+        // if (solverType=="gradient")
+        //     return &fixed_step_solver;
+        // else 
+        if (solverType=="exponential_decay")
             return &exponential_decay_solver;
         else if (solverType=="inverse_decay")
             return &inverse_decay_solver;
@@ -137,6 +175,11 @@ namespace minimizer
         return (std::abs(fun(x0)-fun(x1))>p.tol_residual);
     }
 
+    bool check_tol(const fun_type & fun, const param & p, const point_type & x1, const point_type & x0)
+    {
+        return (check_tol_residual(fun, p, x1, x0) && check_tol_step(p, x1, x0));
+    }
+
     double norm2(const point_type & x)
     {
         double sum(0);
@@ -164,5 +207,13 @@ namespace minimizer
             std::cout << "     x("<< i <<") = " << x[i] << std::endl;
         return;
     }
+
+    void print_results(const fun_type &f, const point_type &x_min, const unsigned int &k)
+    {
+        std::cout << "Minimum found in " << k << " iterations\n";
+        std::cout << "min(f(x)) = " << f(x_min) << std::endl;
+        return;
+    }
+    
 
 }
