@@ -32,25 +32,25 @@ namespace minimizer
         return solve(fun, df, p);
     }
 
-    // point_type fixed_step_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    // {        
-    //     point_type x_old(p.x_0);
-    //     point_type x_new(new_x(dfun, x_old, p.alpha));
-    //     unsigned int k = 0;
+    point_type fixed_step_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+    {        
+        point_type x_old(p.x_0);
+        point_type x_new(new_x(dfun, x_old, p.alpha));
+        unsigned int k = 0;
         
-    //     bool check = check_tol(fun, p, x_new, x_old);
+        bool check = check_tol(fun, p, x_new, x_old);
 
-    //     while (k<p.k_max && check)
-    //     {
-    //         x_new = new_x(dfun, x_old, p.alpha);
-    //         check = check_tol_residual(fun, p, x_new, x_old);
-    //         x_old = x_new;            
-    //         ++k;
-    //     }
+        while (k<p.k_max && check)
+        {
+            x_new = new_x(dfun, x_old, p.alpha);
+            check = check_tol_residual(fun, p, x_new, x_old);
+            x_old = x_new;            
+            ++k;
+        }
 
-    //     print_results(fun, x_old, k);
-    //     return x_old;
-    // }
+        print_results(fun, x_old, k);
+        return x_old;
+    }
 
     point_type inverse_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
     {
@@ -114,7 +114,7 @@ namespace minimizer
                 ++i;
                 a_k /= 2;
             }
-            x_new = new_x(dfun, x_old, p.alpha);
+            x_new = new_x(dfun, x_old, a_k);
             check = check_tol(fun, p, x_new, x_old);
             x_old = x_new;            
             ++k;
@@ -130,7 +130,6 @@ namespace minimizer
     {
         point_type x1 = new_x(dfun, x0, a0);
         double norm_df = norm2(dfun(x0));
-        // std::cout << fun(x0) - fun(x1) - p.sigma * a0 * norm_df*norm_df << "    " <<std::abs( norm2(x1)-norm2(x0) )   <<"\n";
         return ( (fun(x0) - fun(x1)) >= p.sigma * a0 * norm_df*norm_df);
     }
 
@@ -138,10 +137,9 @@ namespace minimizer
     // @returns pointer to function of the chose solver type
     solverFun choose_solver(const std::string & solverType)
     {
-        // if (solverType=="gradient")
-        //     return &fixed_step_solver;
-        // else 
-        if (solverType=="exponential_decay")
+        if (solverType=="gradient")
+            return &fixed_step_solver;
+        else if (solverType=="exponential_decay")
             return &exponential_decay_solver;
         else if (solverType=="inverse_decay")
             return &inverse_decay_solver;

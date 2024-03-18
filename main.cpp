@@ -21,16 +21,16 @@ minimizer::point_type df (const minimizer::point_type & x)
 
 int main()// (int argc, char ** argv) 
 {
-    // double tol = std::numeric_limits<double>::epsilon()*1000;
-    double tol = 1e-6;
+    double tol = std::numeric_limits<double>::epsilon()*1000;
+    // double tol = 1e-6;
 
-    // minimizer::param p1("gradient", 1000, tol, tol);
+    minimizer::param p1("gradient", 1000, tol, tol);
     minimizer::param p2("inverse_decay", 1000, tol, tol);
     minimizer::param p3("exponential_decay", 1000, tol, tol);
     minimizer::param p4("armijo", 1000, tol, tol);
     
     // analitic derivative
-    // minimizer::solve(f, df, p1);
+    minimizer::solve(f, df, p1);
     minimizer::solve(f, df, p2);
     minimizer::solve(f, df, p3);
     minimizer::solve(f, df, p4);

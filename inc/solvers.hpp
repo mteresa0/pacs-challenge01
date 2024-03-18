@@ -12,7 +12,7 @@ namespace minimizer
     point_type solve(const fun_type &, const dfun_type &, const param &);
     point_type solve(const fun_type &, const param &);
 
-    // point_type fixed_step_solver        (const fun_type &, const dfun_type &, const param &);
+    point_type fixed_step_solver        (const fun_type &, const dfun_type &, const param &);
     point_type inverse_decay_solver     (const fun_type &, const dfun_type &, const param &);
     point_type exponential_decay_solver (const fun_type &, const dfun_type &, const param &); 
     point_type armijo_solver            (const fun_type &, const dfun_type &, const param &);
