@@ -26,15 +26,10 @@ int main()// (int argc, char ** argv)
 {
         // double tol = std::numeric_limits<double>::epsilon()*1000;
 
-    param p1 = read_parameters_from_json("parameters.json", "fixed_step");
-    param p2 = read_parameters_from_json("parameters.json", "inverse_decay");
-    param p3 = read_parameters_from_json("parameters.json", "exponential_decay");
+    param p1 = read_parameters_from_json("parameters.json", "nesterov");
+    param p2 = read_parameters_from_json("parameters.json", "heavy_ball");
+    param p3 = read_parameters_from_json("parameters.json", "adaptive_hb");
     param p4 = read_parameters_from_json("parameters.json", "armijo");
-
-    // param p1("gradient", 1000, tol, tol);
-    // param p2("inverse_decay", 1000, tol, tol);
-    // param p3("exponential_decay", 1000, tol, tol);
-    // param p4("armijo", 1000, tol, tol);
     
     // analitic derivative
     solve(f, df, p1);
