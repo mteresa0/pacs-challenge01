@@ -1,30 +1,36 @@
 {
     "solvers": {
         "armijo": {
-            "alpha": 0.2,
-            "sigma": 0.5
+            "alpha": 0.1,
+            "sigma": 0.2
         },
         "inverse_decay" : {
             "alpha": 0.05,
-            "mu": 0.1
+            "mu": 0.01
         },
         "exponential_decay": {
             "alpha": 0.1,
             "mu": 0.2
         },
         "fixed_step": {
-            "alpha": 0.1
+            "alpha": 0.01
         },
         "heavy_ball": {
-            "memory": 0.8,
-            "alpha": 0.06
+            "alpha": 0.01,
+            "memory": 0.9
         },
         "nesterov": {
-            "memory": 0.8,
-            "alpha": 0.075
+            "alpha": 0.01,            
+            "memory": 0.9
         },
         "adaptive_hb": {
-            "alpha": 1.875
+            "gamma": 1.8
+        },
+        "adam": {
+            "alpha": 0.5, 
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "eps":   1e-8
         }
     },
     "step_tolerance": 1e-6,

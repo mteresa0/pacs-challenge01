@@ -3,7 +3,7 @@
 
 namespace minimizer 
 {
-    // @param solverType choose between "gradient", "inverse_decay", "exponential_decay" and "armijo"
+    // 
     point_type solve(const fun_type &fun, const dfun_type &dfun, const param & p)
     {
         std::cout<< "\nComputing minimum with " << p.solver_type << " method ...\n";
@@ -213,6 +213,39 @@ namespace minimizer
         return x;
     }
 
+    point_type adam_solver(const fun_type & fun, const dfun_type & dfun, const param & p)
+    {
+        double step = p.alpha;
+        double bet1 = p.mu;
+        double bet2 = p.sigma;
+        double eps = p.eta;
+        auto point_size = p.x_0.size();
+        point_type g_t(point_size), m_t(point_size), v_t(point_size);
+        point_type m_t_hat(point_size), v_t_hat(point_size);
+        point_type x(p.x_0), x_old(point_size);
+        unsigned int t_max = p.k_max; unsigned int t;
+
+        bool check = true;
+
+        for (t = 1; t<t_max && check; ++t)
+        {
+            x_old = x;
+            g_t = dfun(x);
+            for (std::size_t i = 0; i<point_size; ++i)
+            {
+                m_t[i] = bet1 * m_t[i] + (1-bet1) * g_t[i];
+                v_t[i] = bet2 * v_t[i] + (1-bet2) * power(g_t[i], 2);
+                m_t_hat[i] = m_t[i]/(1-power(bet1,t));
+                v_t_hat[i] = v_t[i]/(1-power(bet2,t));  
+                x[i] = x_old[i] - step * m_t_hat[i] / (std::sqrt(v_t_hat[i] + eps)) ;              
+            }
+            check = check_tol(fun, p, x, x_old);
+        }
+
+        print_results(fun, x, t);
+        return x;
+    }
+
     /* evaluates the Armijo condition.
     @note (fun(x0) - fun(x0 - alpha0*df(x0)) >= sigma * alpha0 * norm(df(x0))^2)*/
     bool armijo_condition(const fun_type &fun, const dfun_type &dfun, const param & p, const point_type & x0, const double & a0)
@@ -240,9 +273,11 @@ namespace minimizer
             return &nesterov_solver;
         else if (solverType=="adaptive_hb")
             return &adaptive_hb_solver;
+        else if (solverType=="adam")
+            return &adam_solver;
         else
         {
-            std::cerr << "invalid solver name\n";
+            std::cerr << "Invalid solver name\n";
             return nullptr;
         }
     }
@@ -304,6 +339,17 @@ namespace minimizer
         return (norm2(res));
     }
 
+    // faster power method, only positive integer exponent allowed (>=0)
+    double power(const double & a, const unsigned int b)
+    {
+        double res = 1;
+        for (unsigned int i = 0; i<b; ++i)
+        {
+            res *= a;
+        }
+        return res;
+    }
+
     // print point
     void print_point(const point_type & x)
     {
@@ -315,6 +361,7 @@ namespace minimizer
     void print_results(const fun_type &f, const point_type &x_min, const unsigned int &k)
     {
         std::cout << "Minimum found in " << k << " iterations\n";
+        print_point(x_min);
         std::cout << "min(f(x)) = " << f(x_min) << std::endl;
         return;
     }

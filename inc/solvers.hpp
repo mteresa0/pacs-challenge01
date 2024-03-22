@@ -12,6 +12,7 @@ namespace minimizer
     point_type solve(const fun_type &, const dfun_type &, const param &);
     point_type solve(const fun_type &, const param &);
 
+    // solvers
     point_type fixed_step_solver        (const fun_type &, const dfun_type &, const param &);
     point_type inverse_decay_solver     (const fun_type &, const dfun_type &, const param &);
     point_type exponential_decay_solver (const fun_type &, const dfun_type &, const param &); 
@@ -19,6 +20,8 @@ namespace minimizer
     point_type heavy_ball_solver        (const fun_type &, const dfun_type &, const param &);
     point_type nesterov_solver          (const fun_type &, const dfun_type &, const param &);
     point_type adaptive_hb_solver       (const fun_type &, const dfun_type &, const param &);
+    point_type adam_solver              (const fun_type &, const dfun_type &, const param &);
+    
     bool armijo_condition(const fun_type &, const dfun_type &,const param &, const point_type &, const double &);
     solverFun choose_solver(const std::string &);
 
@@ -30,6 +33,7 @@ namespace minimizer
     
     double norm2(const point_type & );
     double dist(const point_type &, const point_type &);
+    double power(const double &, const unsigned int);
     void print_point(const point_type &);
     void print_results(const fun_type &, const point_type &, const unsigned int &);
     

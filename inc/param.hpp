@@ -19,6 +19,9 @@ namespace minimizer{
         const double tol_residual;
         const double tol_step;
         
+        // i cannot decide if it is better to have a lot unused parameters with clear name 
+        // or less parameters with unclear names ("p_1", "p_2",... instead of "alpha", "mu"...)
+        // it would be better if i could use the inheritance property of classes
         const double alpha;
         const double mu;
         const double sigma;
