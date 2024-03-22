@@ -49,35 +49,6 @@ namespace minimizer{
     };
 
     param read_parameters_from_json(const std::string & , const std::string &);
-
-    /*        
-        const double mu;
-        const double alpha;
-        const double sigma;
-        const double eta;
-        
-            const double & mu_= 0.2, 
-            const double & a_= 0.1, 
-            const double & sigma_ = 0.2, 
-            const double & eta_ = 0.9,
-    */
-
-    // struct armijo_param : public param
-    // {
-    //     const double alpha;
-    //     const double sigma;
-
-    //     armijo_param(const unsigned int k_max_ = 100, 
-    //         const double & tol_r = 1e-6, 
-    //         const double & tol_s = 1e-6, 
-    //         const double & alpha_ = 0.1,
-    //         const double & sigma_ = 0.9):
-    //         param("armijo", k_max_, tol_r, tol_s),
-    //         alpha(alpha_),
-    //         sigma(sigma_) 
-    //     {};
-        
-    // };
     
 }
 

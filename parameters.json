@@ -1,0 +1,33 @@
+{
+    "solvers": {
+        "armijo": {
+            "alpha": 0.2,
+            "sigma": 0.5
+        },
+        "inverse_decay" : {
+            "alpha": 0.05,
+            "mu": 0.1
+        },
+        "exponential_decay": {
+            "alpha": 0.1,
+            "mu": 0.2
+        },
+        "fixed_step": {
+            "alpha": 0.1
+        },
+        "heavy_ball": {
+            "memory": 0.8,
+            "alpha": 0.06
+        },
+        "nesterov": {
+            "memory": 0.8,
+            "alpha": 0.075
+        },
+        "adaptive_hb": {
+            "alpha": 1.875
+        }
+    },
+    "step_tolerance": 1e-6,
+    "residual_tolerance": 1e-6,
+    "max_iterations": 1000
+}
