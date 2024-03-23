@@ -3,20 +3,20 @@
 
 namespace minimizer::solvers
 {
-    
-    point_type solve(const std::pair<fun_type, dfun_type> &funcs, const param & p)
+
+    point_type solve(const point_type & initial_guess, const std::pair<fun_type, dfun_type> &funcs, const param & p)
     {
         auto fun = funcs.first;
         auto dfun = funcs.second;
         std::cout<< "\nComputing minimum with " << p.solver_type << " method ...\n";
         solverFun solver = choose_solver(p.solver_type);
 
-        point_type x_min = solver(fun, dfun, p);
+        point_type x_min = solver(initial_guess, fun, dfun, p);
 
         return x_min;
     }
 
-    point_type solve(const fun_type &fun, const param & p)
+    point_type solve(const point_type & initial_guess, const fun_type &fun, const param & p)
     {
         auto df = [fun](const point_type & x)
         {
@@ -31,12 +31,12 @@ namespace minimizer::solvers
             return df_x;
         };
         
-        return solve({fun, df}, p);
+        return solve(initial_guess, {fun, df}, p);
     }
     
-        point_type fixed_step_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type fixed_step_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {        
-            point_type x_old(p.x_0);
+            point_type x_old(initial_guess);
             point_type x_new(new_x(dfun, x_old, p.alpha));
             unsigned int k = 0;
             
@@ -54,9 +54,9 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type inverse_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type inverse_decay_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {
-            point_type x_old(p.x_0);
+            point_type x_old(initial_guess);
             point_type x_new(new_x(dfun, x_old, p.alpha));
             unsigned int k = 0;
             double a_k = p.alpha;
@@ -76,9 +76,9 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type exponential_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type exponential_decay_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {
-            point_type x_old(p.x_0);
+            point_type x_old(initial_guess);
             point_type x_new(new_x(dfun, x_old, p.alpha));
             unsigned int k = 0;
             double a_k = p.alpha;
@@ -98,9 +98,9 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type armijo_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type armijo_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {
-            point_type x_old(p.x_0);
+            point_type x_old(initial_guess);
             point_type x_new = (new_x(dfun, x_old, p.alpha));
             unsigned int k = 0;
             double a_k = p.alpha;
@@ -126,9 +126,9 @@ namespace minimizer::solvers
             return x_old;
         }
         
-        point_type heavy_ball_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type heavy_ball_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {
-            point_type x_older(p.x_0), x_new(p.x_0);
+            point_type x_older(initial_guess), x_new(initial_guess);
             point_type x_old = new_x(dfun, x_older, p.alpha);
             unsigned int k = 1;
             double a_k = p.alpha;
@@ -147,10 +147,10 @@ namespace minimizer::solvers
             return x_old;
         }
         
-        point_type nesterov_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type nesterov_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {
-            point_type y(p.x_0), x_old(p.x_0);
-            point_type x_new = new_x(dfun, p.x_0, p.alpha);
+            point_type y(initial_guess), x_old(initial_guess);
+            point_type x_new = new_x(dfun, initial_guess, p.alpha);
             unsigned int k = 1;
             double a_k = p.alpha;
             
@@ -170,9 +170,9 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type adaptive_hb_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type adaptive_hb_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
         {
-            point_type x_minus(p.x_0), x(p.x_0);
+            point_type x_minus(initial_guess), x(initial_guess);
             std::size_t n = x.size();
             for (std::size_t i = 0; i<n; ++i)
                 x_minus[i] += 0.1;
@@ -215,16 +215,16 @@ namespace minimizer::solvers
             return x;
         }
 
-        point_type adam_solver(const fun_type & fun, const dfun_type & dfun, const param & p)
+        point_type adam_solver(const point_type & initial_guess, const fun_type & fun, const dfun_type & dfun, const param & p)
         {
             double step = p.alpha;
             double bet1 = p.mu;
             double bet2 = p.sigma;
             double eps = p.eta;
-            auto point_size = p.x_0.size();
+            auto point_size = initial_guess.size();
             point_type g_t(point_size), m_t(point_size), v_t(point_size);
             point_type m_t_hat(point_size), v_t_hat(point_size);
-            point_type x(p.x_0), x_old(point_size);
+            point_type x(initial_guess), x_old(point_size);
             unsigned int t_max = p.k_max; unsigned int t;
 
             bool check = true;

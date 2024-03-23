@@ -27,8 +27,6 @@ namespace minimizer{
         const double sigma;
         const double eta;
 
-        const point_type x_0;
-
         param(const std::string & solver_type_ ,
             const unsigned int k_max_ = 100, 
             const double & tol_r = 1e-6, 
@@ -36,8 +34,7 @@ namespace minimizer{
             const double & a_= 0.1, 
             const double & mu_= 0.2, 
             const double & sigma_ = 0.2, 
-            const double & eta_ = 0.9,
-            const point_type & x0_ = {0.0, 0.0}) :
+            const double & eta_ = 0.9):
             solver_type(solver_type_),
             k_max(k_max_),
             tol_residual(tol_r),
@@ -45,8 +42,7 @@ namespace minimizer{
             alpha(a_),           
             mu(mu_),
             sigma(sigma_),
-            eta(eta_),
-            x_0(x0_)
+            eta(eta_)
         {}        
 
     };

@@ -9,25 +9,25 @@
             "mu": 0.01
         },
         "exponential_decay": {
-            "alpha": 0.1,
+            "alpha": 0.05,
             "mu": 0.2
         },
         "fixed_step": {
-            "alpha": 0.01
+            "alpha": 0.005
         },
         "heavy_ball": {
-            "alpha": 0.01,
+            "alpha": 0.001,
             "memory": 0.9
         },
         "nesterov": {
-            "alpha": 0.01,            
+            "alpha": 0.001,            
             "memory": 0.9
         },
         "adaptive_hb": {
-            "gamma": 1.8
+            "gamma": 1.875
         },
         "adam": {
-            "alpha": 0.5, 
+            "alpha": 0.1, 
             "beta1": 0.9,
             "beta2": 0.999,
             "eps":   1e-8
@@ -35,5 +35,5 @@
     },
     "step_tolerance": 1e-6,
     "residual_tolerance": 1e-6,
-    "max_iterations": 1000
+    "max_iterations": 10000
 }

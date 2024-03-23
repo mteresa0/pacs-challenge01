@@ -1,5 +1,6 @@
 #include "test_functions.hpp"
 #include "solvers.hpp"
+#include <cmath>
 
 namespace minimizer::test_functions{
 
@@ -14,7 +15,7 @@ namespace minimizer::test_functions{
         return res;
     }
 
-    double beale_fun (const point_type & x_)
+    double beale_fun(const point_type & x_)
     {        
         double x = x_[0]; double y = x_[1];
         return (solvers::power(1.5 - x + x*y, 2) + solvers::power(2.25 - x + x*y*y, 2) + solvers::power(2.625 - x + x*y*y*y, 2));
@@ -29,11 +30,48 @@ namespace minimizer::test_functions{
         return res;
     }
 
+    double rosenbrock_fun(const point_type & x_)
+    {        
+        double x = x_[0]; double y = x_[1];
+        return (solvers::power(1 - x, 2) + 100 * solvers::power(y - x*x, 2));
+    }
+
+    point_type rosenbrock_grad(const point_type & x_)
+    {
+        point_type res(2);
+        double x = x_[0]; double y = x_[1];
+        res[0] = -2*(1-x) - 100 * 2 * (y - x*x) * 2*x;
+        res[1] = 100*2*(y - x*x);
+        return res;
+    }
+
+    double rastrigin_fun (const point_type & x)
+    {        
+        std::size_t n = x.size();
+        double sum = 10*n;
+        for (std::size_t i = 0; i<n; ++i)
+        {
+            sum += (x[i]-10)*(x[i]-1) - 10*std::cos(2*M_PI*(x[i]-1));
+        }
+        return sum;
+    }
+
+    point_type rastrigin_grad(const point_type & x)
+    {
+        point_type res(x);
+        for (std::size_t i = 0; i<x.size(); ++i)
+        {
+            res[i] = 2*(x[i]-1) + 20*M_PI*std::sin(2*M_PI*(x[i]-1));
+        }
+        return res;
+    }
+
     const std::map<std::string, std::pair<fun_type, dfun_type>> functions = 
     {
         {"assignment", {assignment_fun,     assignment_grad}}, 
         {"beale",      {beale_fun,          beale_grad}}, 
-
+        {"rosenbrock", {rosenbrock_fun,     rosenbrock_grad}},
+        {"rastrigin",  {rastrigin_fun,      rastrigin_grad}}
     };
 
     std::pair<fun_type, dfun_type> get_functions(const std::string & fun_name, const bool & use_analitic_grad)

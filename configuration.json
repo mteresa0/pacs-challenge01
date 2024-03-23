@@ -2,8 +2,10 @@
     "solvers":[
         "armijo",
         "adaptive_hb",
-        "nesterov"
+        "nesterov",
+        "adam"
     ],
-    "function": "beale",
-    "use_analitic_gradient": false
+    "function": "assignment",
+    "use_analitic_gradient": true,
+    "initial_guess": [ 0, 0 ]
 }

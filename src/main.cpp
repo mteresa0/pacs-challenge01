@@ -20,13 +20,14 @@ int main()
 
     bool use_analitic_gradient = config["use_analitic_gradient"].get<bool>();
     auto func_name = config["function"].get<std::string>();
+    auto initial_guess = config["initial_guess"].get<point_type>();
 
     auto funcs  = test_functions::get_functions(func_name, use_analitic_gradient);
 
     for (const auto & solver_name : config["solvers"].get<std::vector<std::string>>())
     {
         param p = read_parameters_from_json("parameters.json", solver_name);
-        solvers::solve(funcs, p);
+        solvers::solve(initial_guess, funcs, p);
     }
 
     return 0;
