@@ -66,7 +66,7 @@ namespace minimizer::test_functions{
         return res;
     }
 
-    const std::map<std::string, std::pair<fun_type, dfun_type>> functions = 
+    const std::map<std::string, std::pair<fun_type, grad_type>> functions = 
     {
         {"default",    {assignment_fun,     assignment_grad}}, 
         {"beale",      {beale_fun,          beale_grad}}, 
@@ -74,7 +74,7 @@ namespace minimizer::test_functions{
         {"rastrigin",  {rastrigin_fun,      rastrigin_grad}}
     };
 
-    std::pair<fun_type, dfun_type> get_functions(const std::string & fun_name, const bool & use_analitic_grad)
+    std::pair<fun_type, grad_type> get_functions(const std::string & fun_name, const bool & use_analitic_grad)
     {
         auto it = functions.find(fun_name);
 
@@ -93,14 +93,14 @@ namespace minimizer::test_functions{
                 auto df = [fun](const point_type & x)
                 {
                     double h = std::numeric_limits<double>::epsilon() * 10000;
-                    minimizer::point_type df_x(x);
+                    minimizer::point_type g_x(x);
                     for (unsigned int i = 0; i<x.size(); ++i)
                     {
                         minimizer::point_type x_plus(x), x_minus(x);
                         x_minus[i] -= h; x_plus[i] += h;
-                        df_x[i] = (fun(x_plus)-fun(x_minus))/2/h;
+                        g_x[i] = (fun(x_plus)-fun(x_minus))/2/h;
                     }
-                    return df_x;
+                    return g_x;
                 };
                 return {fun, df};
             } else {

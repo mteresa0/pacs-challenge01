@@ -16,8 +16,8 @@ namespace minimizer::test_functions{
     double rosenbrock_fun(const point_type & );
     point_type rosenbrock_grad(const point_type &);
 
-    extern const std::map<std::string, std::pair<fun_type, dfun_type>> functions;
+    extern const std::map<std::string, std::pair<fun_type, grad_type>> functions;
     
-    std::pair<fun_type, dfun_type> get_functions(const std::string &, const bool &);
+    std::pair<fun_type, grad_type> get_functions(const std::string &, const bool &);
 }
 #endif 

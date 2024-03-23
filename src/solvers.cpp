@@ -3,15 +3,15 @@
 
 namespace minimizer::solvers
 {
-
-    point_type solve(const point_type & initial_guess, const std::pair<fun_type, dfun_type> &funcs, const param & p)
+    // @brief solves the minimization problem
+    point_type solve(const point_type & initial_guess, const std::pair<fun_type, grad_type> &funcs, const param & p)
     {
         auto fun = funcs.first;
-        auto dfun = funcs.second;
+        auto grad = funcs.second;
         std::cout<< "\nComputing minimum with " << p.solver_type << " method ...\n";
         solverFun solver = choose_solver(p.solver_type);
 
-        point_type x_min = solver(initial_guess, fun, dfun, p);
+        point_type x_min = solver(initial_guess, fun, grad, p);
 
         return x_min;
     }
@@ -21,30 +21,30 @@ namespace minimizer::solvers
         auto df = [fun](const point_type & x)
         {
             double h = std::numeric_limits<double>::epsilon() * 10000;
-            minimizer::point_type df_x(x);
+            minimizer::point_type g_x(x);
             for (unsigned int i = 0; i<x.size(); ++i)
             {
                 minimizer::point_type x_plus(x), x_minus(x);
                 x_minus[i] -= h; x_plus[i] += h;
-                df_x[i] = (fun(x_plus)-fun(x_minus))/2/h;
+                g_x[i] = (fun(x_plus)-fun(x_minus))/2/h;
             }
-            return df_x;
+            return g_x;
         };
         
         return solve(initial_guess, {fun, df}, p);
     }
     
-        point_type fixed_step_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type fixed_step_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {        
             point_type x_old(initial_guess);
-            point_type x_new(new_x(dfun, x_old, p.alpha));
+            point_type x_new(new_x(grad, x_old, p.alpha));
             unsigned int k = 0;
             
             bool check = check_tol(fun, p, x_new, x_old);
 
             while (k<p.k_max && check)
             {
-                x_new = new_x(dfun, x_old, p.alpha);
+                x_new = new_x(grad, x_old, p.alpha);
                 check = check_tol_residual(fun, p, x_new, x_old);
                 x_old = x_new;            
                 ++k;
@@ -54,10 +54,10 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type inverse_decay_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type inverse_decay_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {
             point_type x_old(initial_guess);
-            point_type x_new(new_x(dfun, x_old, p.alpha));
+            point_type x_new(new_x(grad, x_old, p.alpha));
             unsigned int k = 0;
             double a_k = p.alpha;
             
@@ -65,7 +65,7 @@ namespace minimizer::solvers
 
             while (k<p.k_max && check)
             {
-                x_new = new_x(dfun, x_old, a_k);
+                x_new = new_x(grad, x_old, a_k);
                 check = check_tol(fun, p, x_new, x_old);
                 a_k = p.alpha/(1 + k*p.mu);
                 x_old = x_new;            
@@ -76,10 +76,10 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type exponential_decay_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type exponential_decay_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {
             point_type x_old(initial_guess);
-            point_type x_new(new_x(dfun, x_old, p.alpha));
+            point_type x_new(new_x(grad, x_old, p.alpha));
             unsigned int k = 0;
             double a_k = p.alpha;
             
@@ -87,7 +87,7 @@ namespace minimizer::solvers
 
             while (k<p.k_max && check)
             {
-                x_new = new_x(dfun, x_old, a_k);
+                x_new = new_x(grad, x_old, a_k);
                 check = check_tol(fun, p, x_new, x_old);
                 a_k = p.alpha * std::exp(-(k*p.mu));
                 x_old = x_new;            
@@ -98,10 +98,10 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type armijo_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type armijo_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {
             point_type x_old(initial_guess);
-            point_type x_new = (new_x(dfun, x_old, p.alpha));
+            point_type x_new = (new_x(grad, x_old, p.alpha));
             unsigned int k = 0;
             double a_k = p.alpha;
             
@@ -111,12 +111,12 @@ namespace minimizer::solvers
             while (k<p.k_max && check)
             {
                 i = 0;
-                while (!armijo_condition(fun, dfun, p, x_old, a_k) && i<i_max)
+                while (!armijo_condition(fun, grad, p, x_old, a_k) && i<i_max)
                 {
                     ++i;
                     a_k /= 2;
                 }
-                x_new = new_x(dfun, x_old, a_k);
+                x_new = new_x(grad, x_old, a_k);
                 check = check_tol(fun, p, x_new, x_old);
                 x_old = x_new;            
                 ++k;
@@ -126,17 +126,17 @@ namespace minimizer::solvers
             return x_old;
         }
         
-        point_type heavy_ball_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type heavy_ball_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {
             point_type x_older(initial_guess), x_new(initial_guess);
-            point_type x_old = new_x(dfun, x_older, p.alpha);
+            point_type x_old = new_x(grad, x_older, p.alpha);
             unsigned int k = 1;
             double a_k = p.alpha;
             
             bool check = check_tol(fun, p, x_old, x_older);
             while (k<p.k_max && check)
             {
-                x_new = new_x_heavy_ball(dfun, x_old, x_older, a_k, p.eta);
+                x_new = new_x_heavy_ball(grad, x_old, x_older, a_k, p.eta);
                 check = check_tol(fun, p, x_new, x_old);
                 x_older = x_old;
                 x_old = x_new;
@@ -147,10 +147,10 @@ namespace minimizer::solvers
             return x_old;
         }
         
-        point_type nesterov_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type nesterov_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {
             point_type y(initial_guess), x_old(initial_guess);
-            point_type x_new = new_x(dfun, initial_guess, p.alpha);
+            point_type x_new = new_x(grad, initial_guess, p.alpha);
             unsigned int k = 1;
             double a_k = p.alpha;
             
@@ -161,7 +161,7 @@ namespace minimizer::solvers
                     y[i] =  - p.eta*x_old[i] + (p.eta+1)*x_new[i];
                 }
                 x_old = x_new;
-                x_new = new_x(dfun, y, a_k);
+                x_new = new_x(grad, y, a_k);
                 check = check_tol(fun, p, x_new, x_old);
                 ++k;
             }
@@ -170,13 +170,13 @@ namespace minimizer::solvers
             return x_old;
         }
 
-        point_type adaptive_hb_solver(const point_type & initial_guess, const fun_type &fun, const dfun_type &dfun, const param &p)
+        point_type adaptive_hb_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
         {
             point_type x_minus(initial_guess), x(initial_guess);
             std::size_t n = x.size();
             for (std::size_t i = 0; i<n; ++i)
                 x_minus[i] += 0.1;
-            point_type g_minus = dfun(x_minus);
+            point_type g_minus = grad(x_minus);
             point_type g(n), delta_g(n), delta_x(n), nom_mu(n);
             unsigned int k = 1;
             double L, mu, alp, bet, gamma(p.alpha), norm_dx, sqrt_L, sqrt_mu;
@@ -184,7 +184,7 @@ namespace minimizer::solvers
             bool check = check_tol(fun, p, x_minus, x);
             while (k<p.k_max && check)
             {
-                g = dfun(x);
+                g = grad(x);
                 for (std::size_t i = 0; i<n; ++i)
                 {
                     delta_g[i] = g[i] - g_minus[i];
@@ -215,7 +215,7 @@ namespace minimizer::solvers
             return x;
         }
 
-        point_type adam_solver(const point_type & initial_guess, const fun_type & fun, const dfun_type & dfun, const param & p)
+        point_type adam_solver(const point_type & initial_guess, const fun_type & fun, const grad_type & grad, const param & p)
         {
             double step = p.alpha;
             double bet1 = p.mu;
@@ -232,7 +232,7 @@ namespace minimizer::solvers
             for (t = 1; t<t_max && check; ++t)
             {
                 x_old = x;
-                g_t = dfun(x);
+                g_t = grad(x);
                 for (std::size_t i = 0; i<point_size; ++i)
                 {
                     m_t[i] = bet1 * m_t[i] + (1-bet1) * g_t[i];
@@ -250,10 +250,10 @@ namespace minimizer::solvers
 
     /* evaluates the Armijo condition.
     @note (fun(x0) - fun(x0 - alpha0*df(x0)) >= sigma * alpha0 * norm(df(x0))^2)*/
-    bool armijo_condition(const fun_type &fun, const dfun_type &dfun, const param & p, const point_type & x0, const double & a0)
+    bool armijo_condition(const fun_type &fun, const grad_type &grad, const param & p, const point_type & x0, const double & a0)
     {
-        point_type x1 = new_x(dfun, x0, a0);
-        double norm_df = norm2(dfun(x0));
+        point_type x1 = new_x(grad, x0, a0);
+        double norm_df = norm2(grad(x0));
         return ( (fun(x0) - fun(x1)) >= p.sigma * a0 * norm_df*norm_df);
     }
 
@@ -284,10 +284,10 @@ namespace minimizer::solvers
         }
     }
 
-    point_type new_x_heavy_ball(const dfun_type & dfun, const point_type &x_old, const point_type & x_older, const double &a_k, const double & eta)
+    point_type new_x_heavy_ball(const grad_type & grad, const point_type &x_old, const point_type & x_older, const double &a_k, const double & eta)
     {
-        point_type x_new = new_x(dfun, x_old, a_k);
-        point_type grad_x = dfun(x_old);
+        point_type x_new = new_x(grad, x_old, a_k);
+        point_type grad_x = grad(x_old);
         for (std::size_t i = 0; i<x_new.size(); ++i)
         {
             x_new[i] = x_old[i]*(1+eta) - a_k*grad_x[i] - eta*x_older[i];
@@ -295,14 +295,14 @@ namespace minimizer::solvers
         return x_new;
     }
 
-    point_type new_x(const dfun_type & dfun, const point_type &x, const double &a_k)
+    point_type new_x(const grad_type & grad, const point_type &x, const double &a_k)
     {
         // computes x_{k+1} = x_k - alpha_k*df(x_k)
         // where x_k and df(x_k) are R^n
         point_type new_x(x);
-        point_type df_x = dfun(x);
+        point_type g_x = grad(x);
         for (std::size_t i = 0; i<x.size(); ++i)
-            new_x[i] = x[i] - a_k*df_x[i];
+            new_x[i] = x[i] - a_k*g_x[i];
         return new_x;
     }
 

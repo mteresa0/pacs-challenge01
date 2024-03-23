@@ -10,7 +10,7 @@ namespace minimizer{
 
     typedef std::vector<double> point_type;
     typedef std::function<double(const point_type &)> fun_type;
-    typedef std::function<point_type (const point_type &)> dfun_type; 
+    typedef std::function<point_type (const point_type &)> grad_type; 
 
     struct param
     {
