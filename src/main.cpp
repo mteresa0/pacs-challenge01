@@ -6,42 +6,28 @@
 #include "solvers.hpp"
 #include "param.hpp"
 #include "json.hpp"
+#include "test_functions.hpp"
 
 using namespace minimizer;
 
-double f (const point_type & x)
+int main()
 {
-    return (x[0]*x[1] + 4*x[0]*x[0]*x[0]*x[0] + x[1]*x[1] + 3*x[0]);
-}
+    std::ifstream ifile("configuration.json");
+    using json=nlohmann::json;
+    json config;
+    ifile >> config;
+    ifile.close();
 
-point_type df (const point_type & x)
-{
-    point_type res(2);
-    res[0] = (x[1] + 16*x[0]*x[0]*x[0] + 3);
-    res[1] = (x[0] + 2*x[1]);
-    return res;
-}
+    bool use_analitic_gradient = config["use_analitic_gradient"].get<bool>();
+    auto func_name = config["function"].get<std::string>();
 
-int main()// (int argc, char ** argv) 
-{
-        // double tol = std::numeric_limits<double>::epsilon()*1000;
+    auto funcs  = test_functions::get_functions(func_name, use_analitic_gradient);
 
-    param p1 = read_parameters_from_json("parameters.json", "nesterov");
-    param p2 = read_parameters_from_json("parameters.json", "heavy_ball");
-    param p3 = read_parameters_from_json("parameters.json", "adaptive_hb");
-    param p4 = read_parameters_from_json("parameters.json", "armijo");
-    
-    // analitic derivative
-    solve(f, df, p1);
-    solve(f, df, p2);
-    solve(f, df, p3);
-    solve(f, df, p4);
-
-    // finite difference
-    solve(f, p1);
-    solve(f, p2);
-    solve(f, p3);
-    solve(f, p4);
+    for (const auto & solver_name : config["solvers"].get<std::vector<std::string>>())
+    {
+        param p = read_parameters_from_json("parameters.json", solver_name);
+        solvers::solve(funcs, p);
+    }
 
     return 0;
 }

@@ -1,0 +1,9 @@
+{
+    "solvers":[
+        "armijo",
+        "adaptive_hb",
+        "nesterov"
+    ],
+    "function": "beale",
+    "use_analitic_gradient": false
+}

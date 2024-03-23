@@ -5,11 +5,11 @@
 #include <functional>
 #include "param.hpp"
 
-namespace minimizer 
+namespace minimizer::solvers
 {        
     typedef std::function<point_type(const fun_type &, const dfun_type &, const param &)> solverFun;
 
-    point_type solve(const fun_type &, const dfun_type &, const param &);
+    point_type solve(const std::pair<fun_type,dfun_type> &, const param &);
     point_type solve(const fun_type &, const param &);
 
     // solvers

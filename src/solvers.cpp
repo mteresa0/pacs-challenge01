@@ -1,11 +1,13 @@
 #include "solvers.hpp"
 #include <cmath>
 
-namespace minimizer 
+namespace minimizer::solvers
 {
-    // 
-    point_type solve(const fun_type &fun, const dfun_type &dfun, const param & p)
+    
+    point_type solve(const std::pair<fun_type, dfun_type> &funcs, const param & p)
     {
+        auto fun = funcs.first;
+        auto dfun = funcs.second;
         std::cout<< "\nComputing minimum with " << p.solver_type << " method ...\n";
         solverFun solver = choose_solver(p.solver_type);
 
@@ -29,222 +31,222 @@ namespace minimizer
             return df_x;
         };
         
-        return solve(fun, df, p);
-    }
-
-    point_type fixed_step_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {        
-        point_type x_old(p.x_0);
-        point_type x_new(new_x(dfun, x_old, p.alpha));
-        unsigned int k = 0;
-        
-        bool check = check_tol(fun, p, x_new, x_old);
-
-        while (k<p.k_max && check)
-        {
-            x_new = new_x(dfun, x_old, p.alpha);
-            check = check_tol_residual(fun, p, x_new, x_old);
-            x_old = x_new;            
-            ++k;
-        }
-
-        print_results(fun, x_old, k);
-        return x_old;
-    }
-
-    point_type inverse_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {
-        point_type x_old(p.x_0);
-        point_type x_new(new_x(dfun, x_old, p.alpha));
-        unsigned int k = 0;
-        double a_k = p.alpha;
-        
-        bool check = check_tol(fun, p, x_new, x_old);
-
-        while (k<p.k_max && check)
-        {
-            x_new = new_x(dfun, x_old, a_k);
-            check = check_tol(fun, p, x_new, x_old);
-            a_k = p.alpha/(1 + k*p.mu);
-            x_old = x_new;            
-            ++k;
-        }
-
-        print_results(fun, x_old, k);
-        return x_old;
-    }
-
-    point_type exponential_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {
-        point_type x_old(p.x_0);
-        point_type x_new(new_x(dfun, x_old, p.alpha));
-        unsigned int k = 0;
-        double a_k = p.alpha;
-        
-        bool check = check_tol(fun, p, x_new, x_old);
-
-        while (k<p.k_max && check)
-        {
-            x_new = new_x(dfun, x_old, a_k);
-            check = check_tol(fun, p, x_new, x_old);
-            a_k = p.alpha * std::exp(-(k*p.mu));
-            x_old = x_new;            
-            ++k;
-        }
-
-        print_results(fun, x_old, k);
-        return x_old;
-    }
-
-    point_type armijo_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {
-        point_type x_old(p.x_0);
-        point_type x_new = (new_x(dfun, x_old, p.alpha));
-        unsigned int k = 0;
-        double a_k = p.alpha;
-        
-        bool check = check_tol(fun, p, x_new, x_old);
-        unsigned int i_max(100), i(0);
-
-        while (k<p.k_max && check)
-        {
-            i = 0;
-            while (!armijo_condition(fun, dfun, p, x_old, a_k) && i<i_max)
-            {
-                ++i;
-                a_k /= 2;
-            }
-            x_new = new_x(dfun, x_old, a_k);
-            check = check_tol(fun, p, x_new, x_old);
-            x_old = x_new;            
-            ++k;
-        }
-
-        print_results(fun, x_old, k);
-        return x_old;
+        return solve({fun, df}, p);
     }
     
-    point_type heavy_ball_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {
-        point_type x_older(p.x_0), x_new(p.x_0);
-        point_type x_old = new_x(dfun, x_older, p.alpha);
-        unsigned int k = 1;
-        double a_k = p.alpha;
-        
-        bool check = check_tol(fun, p, x_old, x_older);
-        while (k<p.k_max && check)
-        {
-            x_new = new_x_heavy_ball(dfun, x_old, x_older, a_k, p.eta);
-            check = check_tol(fun, p, x_new, x_old);
-            x_older = x_old;
-            x_old = x_new;
-            ++k;
-        }
-
-        print_results(fun, x_old, k);
-        return x_old;
-    }
-    
-    point_type nesterov_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {
-        point_type y(p.x_0), x_old(p.x_0);
-        point_type x_new = new_x(dfun, p.x_0, p.alpha);
-        unsigned int k = 1;
-        double a_k = p.alpha;
-        
-        bool check = check_tol(fun, p, x_old, x_new);
-        while (k<p.k_max && check)
-        {
-            for (std::size_t i = 0; i<y.size(); ++i){
-                y[i] =  - p.eta*x_old[i] + (p.eta+1)*x_new[i];
-            }
-            x_old = x_new;
-            x_new = new_x(dfun, y, a_k);
-            check = check_tol(fun, p, x_new, x_old);
-            ++k;
-        }
-
-        print_results(fun, x_old, k);
-        return x_old;
-    }
-
-    point_type adaptive_hb_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
-    {
-        point_type x_minus(p.x_0), x(p.x_0);
-        std::size_t n = x.size();
-        for (std::size_t i = 0; i<n; ++i)
-            x_minus[i] += 0.1;
-        point_type g_minus = dfun(x_minus);
-        point_type g(n), delta_g(n), delta_x(n), nom_mu(n);
-        unsigned int k = 1;
-        double L, mu, alp, bet, gamma(p.alpha), norm_dx, sqrt_L, sqrt_mu;
-        
-        bool check = check_tol(fun, p, x_minus, x);
-        while (k<p.k_max && check)
-        {
-            g = dfun(x);
-            for (std::size_t i = 0; i<n; ++i)
-            {
-                delta_g[i] = g[i] - g_minus[i];
-                delta_x[i] = x[i] - x_minus[i];
-            }
-            g_minus = g;
-            x_minus = x;
-            norm_dx = norm2(delta_x);
-            L = gamma * norm2(delta_g) / norm_dx;
-            for (std::size_t i = 0; i<n; ++i)
-                nom_mu[i] = delta_g[i] - L * delta_x[i];
-            mu = norm2(nom_mu) / norm_dx;
-            sqrt_L  = std::sqrt(L);
-            sqrt_mu = std::sqrt(mu);
-            alp = 2/(sqrt_L + sqrt_mu);
-            alp *= alp;
-            bet = (sqrt_L - sqrt_mu)/(sqrt_L + sqrt_mu);
-            bet *= bet;
+        point_type fixed_step_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {        
+            point_type x_old(p.x_0);
+            point_type x_new(new_x(dfun, x_old, p.alpha));
+            unsigned int k = 0;
             
-            for (std::size_t i = 0; i<n; ++i)
-                x[i] = x[i] - alp*g[i] + bet*delta_x[i];
+            bool check = check_tol(fun, p, x_new, x_old);
 
-            check = check_tol(fun, p, x, x_minus);
-            ++k;
-        }
-
-        print_results(fun, x, k);
-        return x;
-    }
-
-    point_type adam_solver(const fun_type & fun, const dfun_type & dfun, const param & p)
-    {
-        double step = p.alpha;
-        double bet1 = p.mu;
-        double bet2 = p.sigma;
-        double eps = p.eta;
-        auto point_size = p.x_0.size();
-        point_type g_t(point_size), m_t(point_size), v_t(point_size);
-        point_type m_t_hat(point_size), v_t_hat(point_size);
-        point_type x(p.x_0), x_old(point_size);
-        unsigned int t_max = p.k_max; unsigned int t;
-
-        bool check = true;
-
-        for (t = 1; t<t_max && check; ++t)
-        {
-            x_old = x;
-            g_t = dfun(x);
-            for (std::size_t i = 0; i<point_size; ++i)
+            while (k<p.k_max && check)
             {
-                m_t[i] = bet1 * m_t[i] + (1-bet1) * g_t[i];
-                v_t[i] = bet2 * v_t[i] + (1-bet2) * power(g_t[i], 2);
-                m_t_hat[i] = m_t[i]/(1-power(bet1,t));
-                v_t_hat[i] = v_t[i]/(1-power(bet2,t));  
-                x[i] = x_old[i] - step * m_t_hat[i] / (std::sqrt(v_t_hat[i] + eps)) ;              
+                x_new = new_x(dfun, x_old, p.alpha);
+                check = check_tol_residual(fun, p, x_new, x_old);
+                x_old = x_new;            
+                ++k;
             }
-            check = check_tol(fun, p, x, x_old);
+
+            print_results(fun, x_old, k);
+            return x_old;
         }
 
-        print_results(fun, x, t);
-        return x;
-    }
+        point_type inverse_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {
+            point_type x_old(p.x_0);
+            point_type x_new(new_x(dfun, x_old, p.alpha));
+            unsigned int k = 0;
+            double a_k = p.alpha;
+            
+            bool check = check_tol(fun, p, x_new, x_old);
+
+            while (k<p.k_max && check)
+            {
+                x_new = new_x(dfun, x_old, a_k);
+                check = check_tol(fun, p, x_new, x_old);
+                a_k = p.alpha/(1 + k*p.mu);
+                x_old = x_new;            
+                ++k;
+            }
+
+            print_results(fun, x_old, k);
+            return x_old;
+        }
+
+        point_type exponential_decay_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {
+            point_type x_old(p.x_0);
+            point_type x_new(new_x(dfun, x_old, p.alpha));
+            unsigned int k = 0;
+            double a_k = p.alpha;
+            
+            bool check = check_tol(fun, p, x_new, x_old);
+
+            while (k<p.k_max && check)
+            {
+                x_new = new_x(dfun, x_old, a_k);
+                check = check_tol(fun, p, x_new, x_old);
+                a_k = p.alpha * std::exp(-(k*p.mu));
+                x_old = x_new;            
+                ++k;
+            }
+
+            print_results(fun, x_old, k);
+            return x_old;
+        }
+
+        point_type armijo_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {
+            point_type x_old(p.x_0);
+            point_type x_new = (new_x(dfun, x_old, p.alpha));
+            unsigned int k = 0;
+            double a_k = p.alpha;
+            
+            bool check = check_tol(fun, p, x_new, x_old);
+            unsigned int i_max(100), i(0);
+
+            while (k<p.k_max && check)
+            {
+                i = 0;
+                while (!armijo_condition(fun, dfun, p, x_old, a_k) && i<i_max)
+                {
+                    ++i;
+                    a_k /= 2;
+                }
+                x_new = new_x(dfun, x_old, a_k);
+                check = check_tol(fun, p, x_new, x_old);
+                x_old = x_new;            
+                ++k;
+            }
+
+            print_results(fun, x_old, k);
+            return x_old;
+        }
+        
+        point_type heavy_ball_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {
+            point_type x_older(p.x_0), x_new(p.x_0);
+            point_type x_old = new_x(dfun, x_older, p.alpha);
+            unsigned int k = 1;
+            double a_k = p.alpha;
+            
+            bool check = check_tol(fun, p, x_old, x_older);
+            while (k<p.k_max && check)
+            {
+                x_new = new_x_heavy_ball(dfun, x_old, x_older, a_k, p.eta);
+                check = check_tol(fun, p, x_new, x_old);
+                x_older = x_old;
+                x_old = x_new;
+                ++k;
+            }
+
+            print_results(fun, x_old, k);
+            return x_old;
+        }
+        
+        point_type nesterov_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {
+            point_type y(p.x_0), x_old(p.x_0);
+            point_type x_new = new_x(dfun, p.x_0, p.alpha);
+            unsigned int k = 1;
+            double a_k = p.alpha;
+            
+            bool check = check_tol(fun, p, x_old, x_new);
+            while (k<p.k_max && check)
+            {
+                for (std::size_t i = 0; i<y.size(); ++i){
+                    y[i] =  - p.eta*x_old[i] + (p.eta+1)*x_new[i];
+                }
+                x_old = x_new;
+                x_new = new_x(dfun, y, a_k);
+                check = check_tol(fun, p, x_new, x_old);
+                ++k;
+            }
+
+            print_results(fun, x_old, k);
+            return x_old;
+        }
+
+        point_type adaptive_hb_solver(const fun_type &fun, const dfun_type &dfun, const param &p)
+        {
+            point_type x_minus(p.x_0), x(p.x_0);
+            std::size_t n = x.size();
+            for (std::size_t i = 0; i<n; ++i)
+                x_minus[i] += 0.1;
+            point_type g_minus = dfun(x_minus);
+            point_type g(n), delta_g(n), delta_x(n), nom_mu(n);
+            unsigned int k = 1;
+            double L, mu, alp, bet, gamma(p.alpha), norm_dx, sqrt_L, sqrt_mu;
+            
+            bool check = check_tol(fun, p, x_minus, x);
+            while (k<p.k_max && check)
+            {
+                g = dfun(x);
+                for (std::size_t i = 0; i<n; ++i)
+                {
+                    delta_g[i] = g[i] - g_minus[i];
+                    delta_x[i] = x[i] - x_minus[i];
+                }
+                g_minus = g;
+                x_minus = x;
+                norm_dx = norm2(delta_x);
+                L = gamma * norm2(delta_g) / norm_dx;
+                for (std::size_t i = 0; i<n; ++i)
+                    nom_mu[i] = delta_g[i] - L * delta_x[i];
+                mu = norm2(nom_mu) / norm_dx;
+                sqrt_L  = std::sqrt(L);
+                sqrt_mu = std::sqrt(mu);
+                alp = 2/(sqrt_L + sqrt_mu);
+                alp *= alp;
+                bet = (sqrt_L - sqrt_mu)/(sqrt_L + sqrt_mu);
+                bet *= bet;
+                
+                for (std::size_t i = 0; i<n; ++i)
+                    x[i] = x[i] - alp*g[i] + bet*delta_x[i];
+
+                check = check_tol(fun, p, x, x_minus);
+                ++k;
+            }
+
+            print_results(fun, x, k);
+            return x;
+        }
+
+        point_type adam_solver(const fun_type & fun, const dfun_type & dfun, const param & p)
+        {
+            double step = p.alpha;
+            double bet1 = p.mu;
+            double bet2 = p.sigma;
+            double eps = p.eta;
+            auto point_size = p.x_0.size();
+            point_type g_t(point_size), m_t(point_size), v_t(point_size);
+            point_type m_t_hat(point_size), v_t_hat(point_size);
+            point_type x(p.x_0), x_old(point_size);
+            unsigned int t_max = p.k_max; unsigned int t;
+
+            bool check = true;
+
+            for (t = 1; t<t_max && check; ++t)
+            {
+                x_old = x;
+                g_t = dfun(x);
+                for (std::size_t i = 0; i<point_size; ++i)
+                {
+                    m_t[i] = bet1 * m_t[i] + (1-bet1) * g_t[i];
+                    v_t[i] = bet2 * v_t[i] + (1-bet2) * power(g_t[i], 2);
+                    m_t_hat[i] = m_t[i]/(1-power(bet1,t));
+                    v_t_hat[i] = v_t[i]/(1-power(bet2,t));  
+                    x[i] = x_old[i] - step * m_t_hat[i] / (std::sqrt(v_t_hat[i] + eps)) ;              
+                }
+                check = check_tol(fun, p, x, x_old);
+            }
+
+            print_results(fun, x, t);
+            return x;
+        }
 
     /* evaluates the Armijo condition.
     @note (fun(x0) - fun(x0 - alpha0*df(x0)) >= sigma * alpha0 * norm(df(x0))^2)*/
