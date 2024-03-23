@@ -18,7 +18,7 @@ namespace minimizer::solvers
 
     point_type solve(const point_type & initial_guess, const fun_type &fun, const param & p)
     {
-        auto df = [fun](const point_type & x)
+        auto g = [fun](const point_type & x)
         {
             double h = std::numeric_limits<double>::epsilon() * 10000;
             minimizer::point_type g_x(x);
@@ -31,7 +31,7 @@ namespace minimizer::solvers
             return g_x;
         };
         
-        return solve(initial_guess, {fun, df}, p);
+        return solve(initial_guess, {fun, g}, p);
     }
     
         point_type fixed_step_solver(const point_type & initial_guess, const fun_type &fun, const grad_type &grad, const param &p)
@@ -249,7 +249,7 @@ namespace minimizer::solvers
         }
 
     /* evaluates the Armijo condition.
-    @note (fun(x0) - fun(x0 - alpha0*df(x0)) >= sigma * alpha0 * norm(df(x0))^2)*/
+    @note (fun(x0) - fun(x0 - alpha0*g(x0)) >= sigma * alpha0 * norm(g(x0))^2)*/
     bool armijo_condition(const fun_type &fun, const grad_type &grad, const param & p, const point_type & x0, const double & a0)
     {
         point_type x1 = new_x(grad, x0, a0);
@@ -297,8 +297,8 @@ namespace minimizer::solvers
 
     point_type new_x(const grad_type & grad, const point_type &x, const double &a_k)
     {
-        // computes x_{k+1} = x_k - alpha_k*df(x_k)
-        // where x_k and df(x_k) are R^n
+        // computes x_{k+1} = x_k - alpha_k*g(x_k)
+        // where x_k and g(x_k) are R^n
         point_type new_x(x);
         point_type g_x = grad(x);
         for (std::size_t i = 0; i<x.size(); ++i)

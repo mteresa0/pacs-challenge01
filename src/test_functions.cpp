@@ -90,7 +90,7 @@ namespace minimizer::test_functions{
             if (it!=functions.end())
             {
                 auto fun = it->second.first;
-                auto df = [fun](const point_type & x)
+                auto g = [fun](const point_type & x)
                 {
                     double h = std::numeric_limits<double>::epsilon() * 10000;
                     minimizer::point_type g_x(x);
@@ -102,7 +102,7 @@ namespace minimizer::test_functions{
                     }
                     return g_x;
                 };
-                return {fun, df};
+                return {fun, g};
             } else {
                 std::cerr << "Function name in configuration file is invalid.\n";
                 return {nullptr, nullptr};
