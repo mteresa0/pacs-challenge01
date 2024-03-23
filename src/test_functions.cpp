@@ -66,6 +66,7 @@ namespace minimizer::test_functions{
         return res;
     }
 
+    // data structure to pass from configuration input to the corrisponding function and its gradient
     const std::map<std::string, std::pair<fun_type, grad_type>> functions = 
     {
         {"default",    {assignment_fun,     assignment_grad}}, 
@@ -74,6 +75,7 @@ namespace minimizer::test_functions{
         {"rastrigin",  {rastrigin_fun,      rastrigin_grad}}
     };
 
+    // @return the pair function-gradient given the configuration inputs
     std::pair<fun_type, grad_type> get_functions(const std::string & fun_name, const bool & use_analitic_grad)
     {
         auto it = functions.find(fun_name);

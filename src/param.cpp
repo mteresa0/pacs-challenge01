@@ -6,7 +6,7 @@
 
 namespace minimizer{
 
-    // i really do not like it, it would be better if i could use the inheritance property of classes
+    // reads solvers parameters from the parameters.json file
     param read_parameters_from_json(const std::string & filename, const std::string & solver_name)
     {
         std::ifstream ifile(filename);
@@ -21,6 +21,7 @@ namespace minimizer{
 
         auto nan = std::numeric_limits<double>::quiet_NaN();
 
+        // i really do not like it, it would be better if i could use the inheritance property of classes
         if (solver_name=="armijo")
         {
             auto alpha = jp["solvers"][solver_name]["alpha"].get<double>();

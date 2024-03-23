@@ -4,6 +4,9 @@
 namespace minimizer::solvers
 {
     // @brief solves the minimization problem
+    // @param initial_guess is the initial guess,
+    // @param funcs is the pair that contains the function and its gradient
+    // @param p is the parameter struct
     point_type solve(const point_type & initial_guess, const std::pair<fun_type, grad_type> &funcs, const param & p)
     {
         auto fun = funcs.first;
@@ -16,6 +19,8 @@ namespace minimizer::solvers
         return x_min;
     }
 
+    // overloaded function in case the analitic gradient is unknown
+    // in this moment this function is unused
     point_type solve(const point_type & initial_guess, const fun_type &fun, const param & p)
     {
         auto g = [fun](const point_type & x)
@@ -257,7 +262,6 @@ namespace minimizer::solvers
         return ( (fun(x0) - fun(x1)) >= p.sigma * a0 * norm_df*norm_df);
     }
 
-    // @param solverType must be "fixed_step_solver", "inverse_decay", "exponential_decay" or "armijo"
     // @returns pointer to function of the chose solver type
     solverFun choose_solver(const std::string & solverType)
     {
@@ -284,6 +288,7 @@ namespace minimizer::solvers
         }
     }
 
+    // computes the new coordinate according to the heavy-ball method
     point_type new_x_heavy_ball(const grad_type & grad, const point_type &x_old, const point_type & x_older, const double &a_k, const double & eta)
     {
         point_type x_new = new_x(grad, x_old, a_k);
@@ -295,6 +300,7 @@ namespace minimizer::solvers
         return x_new;
     }
 
+    // computes the new coordinate according to the gradient method
     point_type new_x(const grad_type & grad, const point_type &x, const double &a_k)
     {
         // computes x_{k+1} = x_k - alpha_k*g(x_k)
@@ -306,21 +312,25 @@ namespace minimizer::solvers
         return new_x;
     }
 
+    //check if the step constraint is satisfied
     bool check_tol_step(const param & p, const point_type & x1, const point_type & x0)
     {
         return (std::abs(dist(x0,x1))>p.tol_step);
     }
 
+    //check if the residual constraint is satisfied
     bool check_tol_residual(const fun_type & fun, const param & p, const point_type & x1, const point_type & x0)
     {
         return (std::abs(fun(x0)-fun(x1))>p.tol_residual);
     }
 
+    // check the two the tollerance constraints
     bool check_tol(const fun_type & fun, const param & p, const point_type & x1, const point_type & x0)
     {
         return (check_tol_residual(fun, p, x1, x0) && check_tol_step(p, x1, x0));
     }
 
+    // computes euclidean norm
     double norm2(const point_type & x)
     {
         double sum(0);
@@ -329,7 +339,8 @@ namespace minimizer::solvers
         return (std::sqrt(sum));
     }
 
-    // returns d = sqrt(|| x0 - x1 ||^2)
+    // @returns the distance between two points:
+    // d = sqrt(|| x0 - x1 ||^2)
     double dist(const point_type & x0, const point_type & x1)
     {
         point_type res(2);
