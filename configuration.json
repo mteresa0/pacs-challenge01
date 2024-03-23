@@ -5,7 +5,7 @@
         "nesterov",
         "adam"
     ],
-    "function": "assignment",
+    "function": "default",
     "use_analitic_gradient": true,
     "initial_guess": [ 0, 0 ]
 }

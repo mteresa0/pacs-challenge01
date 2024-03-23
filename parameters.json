@@ -35,5 +35,5 @@
     },
     "step_tolerance": 1e-6,
     "residual_tolerance": 1e-6,
-    "max_iterations": 10000
+    "max_iterations": 1000
 }

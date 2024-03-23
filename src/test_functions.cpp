@@ -68,7 +68,7 @@ namespace minimizer::test_functions{
 
     const std::map<std::string, std::pair<fun_type, dfun_type>> functions = 
     {
-        {"assignment", {assignment_fun,     assignment_grad}}, 
+        {"default",    {assignment_fun,     assignment_grad}}, 
         {"beale",      {beale_fun,          beale_grad}}, 
         {"rosenbrock", {rosenbrock_fun,     rosenbrock_grad}},
         {"rastrigin",  {rastrigin_fun,      rastrigin_grad}}
