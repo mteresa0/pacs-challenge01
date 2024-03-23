@@ -182,13 +182,16 @@ Several test functions have been implemented in order to test the aforementioned
     where $a = 1$ and $b = 100$.
     The global minimum is in $\hat{x} = (1, 1)$ and $f(\hat{x}) = 0$.
 - `beale` - the Beale function is defined as follows:
-    $$ f(x,y)=\left(1.5-x+xy\right)^{2}+\left(2.25-x+xy^{2}\right)^{2}+ ( 2.625 − x + x y^3 )^2$$
+
+    $$ f(x,y)= (1.5-x+xy)^2 + (2.25-x+xy^{2})^{2}+ (2.625 − x + x y^3)^2$$
     The global minimum is in $\hat{x} = (3, 0.5)$ and $f(\hat{x}) = 0$.
 
 - `rastrigin` - the Rastrigin function is defined as follows:
-$$ f(x) = An + \sum_{i=1}^n [(x_1-1)^2 - A \cos(2\pi (x_i-1))]$$
-where A = 10 and n is the dimension of the vector $x$. This is the decentered version, therefore the global minima is $\hat{x} = (1, 1)$ and $f(\hat{x}) = 0$.
 
-Note that all the solvers aforementioned could not find the global minumum for the Rastrigin function due to its large number of local minima.
+    $$ f(x) = An + \sum_{i=1}^n [(x_1-1)^2 - A \cos(2\pi (x_i-1))]$$
+
+    where A = 10 and n is the dimension of the vector $x$. This is the decentered version, therefore the global minima is $\hat{x} = (1, 1)$ and $f(\hat{x}) = 0$.
+
+    Note that all the solvers aforementioned could not find the global minumum for the Rastrigin function due to its large number of local minima.
 
 
