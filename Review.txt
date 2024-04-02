@@ -1,0 +1,14 @@
+Please modify your README.md:
+  git clone --recursive git@github.com:mteresa0/pacs-challenge01.git
+
+Please remove the obj folder if you don't use it in the Makefile.
+Note that you are not createing any obj files since you are not linking. Check if this is what you wanted to do, or 
+if you wanted to have all the obj files inside the obj folder :)
+
+Code Design:
+  - If you want, you can add a bin folder and let the makefile generate the binary there
+  - The code should have been commented a bit more, however code is very readable and simple. 
+  - Although I really like the old fashioned hard coded functions, maybe a muParser usage would have been better.
+
+
+The code is very clean, clear and definitely well written.
